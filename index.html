@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+    body {
+      --bg: #f7f9fa; --panel: #ffffff; --ink: #171b20; --muted: #66707c; --line: #e3e8ec;
+      --accent: #0d94b4; --good: #35a065; --warn: #cf8a2e; --bad: #d95f4c;
+      background: var(--bg); color: var(--ink);
+      font-family: 'Space Grotesk', 'Noto Sans JP', sans-serif;
+      transition: background .35s ease, color .35s ease;
+    }
+    body[data-theme="dark"] {
+      --bg: #0d1117; --panel: #141a22; --ink: #e7ecf2; --muted: #8b96a5; --line: #232c37;
+      --accent: #4cc4e4; --good: #4ade80; --warn: #e0a13c; --bad: #f27a68;
+    }
+    @keyframes dash { to { stroke-dashoffset: -32; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.6); opacity: .25; } }
+    button { font-family: inherit; }
+    ::selection { background: color-mix(in oklab, var(--accent) 30%, transparent); }
+    @media (max-width: 880px) {
+      html { scroll-snap-type: none; }
+      .pf-shell { flex-direction: column !important; }
+      .pf-side { flex: none !important; width: 100% !important; height: auto !important; flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; border-right: none !important; border-bottom: 1px solid var(--line) !important; background: var(--bg) !important; z-index: 40 !important; }
+      .pf-head { padding: 0 !important; margin-right: auto !important; }
+      .pf-lang { padding: 0 !important; }
+      .pf-foot { margin-top: 0 !important; padding: 0 !important; flex-direction: row !important; align-items: center !important; }
+      .pf-foot a { display: none !important; }
+      .pf-nav { flex-direction: row !important; overflow-x: auto !important; width: 100% !important; order: 10 !important; gap: 4px !important; scrollbar-width: none !important; }
+      .pf-nav::-webkit-scrollbar { display: none; }
+      .pf-nav button { width: auto !important; white-space: nowrap !important; padding: 7px 11px !important; flex: none !important; }
+      .pf-pad { padding: 0 18px !important; }
+      .pf-sec { min-height: 0 !important; padding: 44px 0 !important; }
+      .pf-grid2 { grid-template-columns: 1fr !important; gap: 18px !important; }
+      .pf-stats4 { grid-template-columns: 1fr 1fr !important; }
+      .pf-exp { grid-template-columns: 1fr !important; gap: 8px !important; }
+      .pf-skills { grid-template-columns: 1fr !important; }
+      .pf-h1 { font-size: 34px !important; }
+      .pf-pad h2 { font-size: 25px !important; }
+      .pf-wrapstats { flex-wrap: wrap !important; gap: 14px 22px !important; }
+    }
+  </style>
+</helmet>
+
+<div class="pf-shell" style="display:flex; min-height:100vh; background:var(--bg)">
+
+  <!-- ============ SIDE NAV ============ -->
+  <aside class="pf-side" style="flex:0 0 224px; position:sticky; top:0; height:100vh; box-sizing:border-box; display:flex; flex-direction:column; padding:26px 16px 22px; border-right:1px solid var(--line)">
+    <div class="pf-head" style="display:flex; align-items:center; gap:11px; padding:0 12px 16px">
+      <div style="width:34px; height:34px; border:1.5px solid var(--accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font:600 13px 'IBM Plex Mono',monospace; color:var(--accent)">ED</div>
+      <div>
+        <div style="font:600 13.5px 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--ink)">Elaine Dichoso</div>
+        <div style="font:400 10px 'IBM Plex Mono',monospace; color:var(--muted); letter-spacing:.06em">EE · AUTOMATION · DC</div>
+      </div>
+    </div>
+    <div class="pf-lang" style="display:flex; gap:6px; padding:0 4px 16px">
+      <button onClick="{{ setEn }}" style="flex:1; padding:6px 0; border-radius:7px; border:1px solid {{ langEnBorder }}; background:{{ langEnBg }}; color:{{ langEnColor }}; font:600 10.5px 'IBM Plex Mono',monospace; letter-spacing:.08em; cursor:pointer">EN</button>
+      <button onClick="{{ setJa }}" style="flex:1; padding:6px 0; border-radius:7px; border:1px solid {{ langJaBorder }}; background:{{ langJaBg }}; color:{{ langJaColor }}; font:600 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.08em; cursor:pointer">日本語</button>
+    </div>
+    <nav class="pf-nav" style="display:flex; flex-direction:column; gap:2px">
+      <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="7">
+        <button onClick="{{ nv.go }}" style="display:flex; align-items:center; gap:12px; padding:9px 12px; border:none; background:{{ nv.bg }}; border-radius:8px; cursor:pointer; text-align:left; width:100%; transition:background .2s">
+          <span style="font:500 10px 'IBM Plex Mono',monospace; color:var(--accent)">{{ nv.num }}</span>
+          <span style="font:500 13px 'Space Grotesk','Noto Sans JP',sans-serif; color:{{ nv.color }}">{{ nv.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+    <div class="pf-foot" style="margin-top:auto; display:flex; flex-direction:column; gap:10px; padding:0 4px">
+      <button onClick="{{ toggleTheme }}" style="display:flex; align-items:center; gap:9px; padding:9px 13px; border:1px solid var(--line); background:var(--panel); color:var(--muted); border-radius:99px; cursor:pointer; font:500 10px 'IBM Plex Mono',monospace; letter-spacing:.12em">
+        <span style="width:8px; height:8px; border-radius:50%; background:var(--accent)"></span>
+        {{ themeLabel }}
+      </button>
+      <a href="mailto:dichoso.elainegrace.aveno@gmail.com" style="font:400 9.5px 'IBM Plex Mono',monospace; color:var(--muted); text-decoration:none; padding:0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">dichoso.elainegrace.aveno@gmail.com</a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN (single scrollable page) ============ -->
+  <main style="flex:1; min-width:0; display:flex; justify-content:center">
+    <div class="pf-pad" style="width:100%; max-width:1080px; padding:0 52px; box-sizing:border-box">
+
+      <!-- ====== 01 OVERVIEW ====== -->
+      <div id="sec-overview" data-screen-label="Overview" class="pf-sec" style="animation:fadeUp .5s ease both; min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:24px 0">
+        <div class="pf-grid2" style="display:grid; grid-template-columns:1.02fr 1fr; gap:44px; align-items:center">
+          <div>
+            <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:14px">{{ t.role }}</div>
+            <h1 class="pf-h1" style="font:600 50px/1.06 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 18px; letter-spacing:-.015em">Elaine Grace Dichoso</h1>
+            <p style="font:400 15.5px/1.7 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 24px; max-width:480px">{{ t.heroP }}</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:30px">
+              <sc-for list="{{ heroChips }}" as="hc" hint-placeholder-count="4">
+                <span style="font:500 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); border:1px solid var(--line); background:var(--panel); border-radius:99px; padding:6px 12px">{{ hc }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:12px">
+              <button onClick="{{ goLab }}" style="padding:13px 22px; background:var(--accent); color:var(--bg); border:none; border-radius:10px; font:600 14px 'Space Grotesk','Noto Sans JP',sans-serif; cursor:pointer">{{ t.ctaLab }}</button>
+              <a href="mailto:dichoso.elainegrace.aveno@gmail.com" style="padding:13px 22px; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:10px; font:500 14px 'Space Grotesk','Noto Sans JP',sans-serif; text-decoration:none">{{ t.ctaMail }}</a>
+            </div>
+          </div>
+          <div>
+            <div style="background:var(--panel); border:1px solid var(--line); border-radius:18px; overflow:hidden">
+              <x-import component-from-global-scope="lab-scene" from="./lab-scenes.js" kind="robot" auto="{{ autoAttr }}" mode="auto" style="height:460px" hint-size="100%,460px"></x-import>
+              <div style="display:flex; justify-content:space-between; padding:10px 16px; border-top:1px solid var(--line)">
+                <span style="font:400 9.5px 'IBM Plex Mono',monospace; letter-spacing:.1em; color:var(--muted)">AUTOMATION CELL</span>
+                <span style="font:400 9.5px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.1em; color:var(--accent)">{{ t.dragHint }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 02 AUTOMATION LAB ====== -->
+      <div id="sec-lab" data-screen-label="Automation Lab" class="pf-sec" style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:44px 0">
+        <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:10px">{{ t.labK }}</div>
+        <h2 style="font:600 32px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 8px">{{ t.labT }}</h2>
+        <p style="font:400 14.5px/1.65 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 22px; max-width:640px">{{ t.labP }}</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px">
+          <sc-for list="{{ machineChips }}" as="mc" hint-placeholder-count="6">
+            <button onClick="{{ mc.go }}" style="padding:8px 15px; border:1px solid {{ mc.border }}; background:{{ mc.bg }}; color:{{ mc.color }}; border-radius:99px; font:500 12.5px 'Space Grotesk','Noto Sans JP',sans-serif; cursor:pointer; transition:all .2s">{{ mc.label }}</button>
+          </sc-for>
+        </div>
+        <div class="pf-grid2" style="display:grid; grid-template-columns:1.6fr 1fr; gap:18px; align-items:start">
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:18px; overflow:hidden">
+            <x-import component-from-global-scope="lab-scene" from="./lab-scenes.js" id="labScene" kind="{{ labKind }}" mode="{{ robotMode }}" auto="{{ autoAttr }}" style="height:500px" hint-size="100%,500px"></x-import>
+            <div style="display:flex; justify-content:space-between; padding:10px 16px; border-top:1px solid var(--line)">
+              <span style="font:400 9.5px 'IBM Plex Mono',monospace; letter-spacing:.1em; color:var(--muted)">{{ labCaption }}</span>
+              <span style="font:400 9.5px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.1em; color:var(--accent)">{{ t.dragHint2 }}</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px 22px">
+              <div style="font:600 17px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:8px">{{ labTitle }}</div>
+              <div style="font:400 13px/1.7 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin-bottom:14px">{{ labBody }}</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px">
+                <sc-for list="{{ labTags }}" as="tg" hint-placeholder-count="4">
+                  <span style="font:500 10px 'IBM Plex Mono',monospace; color:var(--accent); background:color-mix(in oklab, var(--accent) 10%, transparent); border-radius:6px; padding:4px 8px">{{ tg }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <!-- teach pendant -->
+            <div style="display:{{ pendantDisp }}; background:#161c25; border:1px solid #2a3441; border-radius:16px; padding:16px 18px">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+                <div>
+                  <div style="font:600 11px 'IBM Plex Mono',monospace; letter-spacing:.14em; color:#9fb0c1">TEACH PENDANT</div>
+                  <div style="font:400 9px 'IBM Plex Mono',monospace; color:#5c6a78; margin-top:2px">6 AXES · JOG TO TAKE CONTROL</div>
+                </div>
+                <button onClick="{{ estop }}" title="Emergency stop" style="width:32px; height:32px; border-radius:50%; background:#d43828; border:3px solid #7a1d14; cursor:pointer; box-shadow:0 0 0 3px {{ estopRing }}; transition:box-shadow .2s"></button>
+              </div>
+              <div style="display:flex; gap:6px; margin-bottom:12px">
+                <button onClick="{{ setAuto }}" style="flex:1; padding:7px 0; border-radius:7px; border:1px solid #313b48; background:{{ modeAutoBg }}; color:{{ modeAutoColor }}; font:600 10px 'IBM Plex Mono',monospace; letter-spacing:.1em; cursor:pointer">AUTO</button>
+                <button onClick="{{ setManual }}" style="flex:1; padding:7px 0; border-radius:7px; border:1px solid #313b48; background:{{ modeManBg }}; color:{{ modeManColor }}; font:600 10px 'IBM Plex Mono',monospace; letter-spacing:.1em; cursor:pointer">MANUAL</button>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px">
+                <sc-for list="{{ pendRows }}" as="jr" hint-placeholder-count="6">
+                  <div style="display:flex; align-items:center; gap:8px">
+                    <span style="width:22px; font:600 10.5px 'IBM Plex Mono',monospace; color:#9fb0c1">{{ jr.name }}</span>
+                    <button onPointerDown="{{ jr.dn }}" onPointerUp="{{ jogStop }}" onPointerLeave="{{ jogStop }}" style="width:32px; height:26px; border-radius:6px; border:1px solid #313b48; background:#232b36; color:#cfe0f0; font:600 13px 'IBM Plex Mono',monospace; cursor:pointer; user-select:none">−</button>
+                    <div style="flex:1; height:4px; background:#232b36; border-radius:2px; position:relative">
+                      <div style="position:absolute; top:-2px; left:{{ jr.pos }}; width:8px; height:8px; border-radius:50%; background:var(--accent); margin-left:-4px; transition:left .1s linear"></div>
+                    </div>
+                    <button onPointerDown="{{ jr.up }}" onPointerUp="{{ jogStop }}" onPointerLeave="{{ jogStop }}" style="width:32px; height:26px; border-radius:6px; border:1px solid #313b48; background:#232b36; color:#cfe0f0; font:600 13px 'IBM Plex Mono',monospace; cursor:pointer; user-select:none">+</button>
+                    <span style="width:52px; text-align:right; font:500 10.5px 'IBM Plex Mono',monospace; color:#d7e2ee">{{ jr.val }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <button onClick="{{ goHome }}" style="width:100%; padding:8px 0; border-radius:7px; border:1px solid #313b48; background:transparent; color:#9fb0c1; font:600 10px 'IBM Plex Mono',monospace; letter-spacing:.12em; cursor:pointer">⌂ HOME POSITION</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 03 IOT DASHBOARD ====== -->
+      <div id="sec-dashboard" data-screen-label="IoT Dashboard" class="pf-sec" style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:44px 0">
+        <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:10px">{{ t.dashK }}</div>
+        <h2 style="font:600 32px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 8px">{{ t.dashT }}</h2>
+        <p style="font:400 14.5px/1.65 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 24px; max-width:660px">{{ t.dashP }}</p>
+        <div class="pf-stats4" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:16px">
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:10px">
+            <x-import component-from-global-scope="live-chart" from="./widgets.js" kind="gauge" style="height:136px" hint-size="100%,136px"></x-import>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px; display:flex; flex-direction:column; justify-content:center">
+            <div style="font:600 30px 'Space Grotesk',sans-serif; color:var(--bad)">¥4,200</div>
+            <div style="font:400 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); margin-top:6px; line-height:1.6">{{ t.standbyLbl }}</div>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px; display:flex; flex-direction:column; justify-content:center">
+            <div style="display:flex; align-items:center; gap:10px">
+              <span style="position:relative; width:10px; height:10px">
+                <span style="position:absolute; inset:0; border-radius:50%; background:var(--good)"></span>
+                <span style="position:absolute; inset:0; border-radius:50%; background:var(--good); animation:pulse 1.8s ease infinite"></span>
+              </span>
+              <span style="font:600 30px 'Space Grotesk',sans-serif">6/6</span>
+            </div>
+            <div style="font:400 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); margin-top:6px; line-height:1.6">{{ t.machinesLbl }}</div>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px; display:flex; flex-direction:column; justify-content:center">
+            <div style="font:500 11px 'IBM Plex Mono',monospace; color:var(--ink); line-height:1.9">PLC → CT SENSORS<br>→ POSTGRESQL / ORACLE<br>→ POWER BI / GRAFANA</div>
+            <div style="font:400 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); margin-top:6px">{{ t.pipeLbl }}</div>
+          </div>
+        </div>
+        <div class="pf-grid2" style="display:grid; grid-template-columns:1.5fr 1fr; gap:14px">
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px">
+            <div style="font:600 13.5px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:12px">{{ t.chart1 }}</div>
+            <x-import component-from-global-scope="live-chart" from="./widgets.js" kind="line" style="height:230px" hint-size="100%,230px"></x-import>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px">
+            <div style="font:600 13.5px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:12px">{{ t.chart2 }}</div>
+            <x-import component-from-global-scope="live-chart" from="./widgets.js" kind="bars" style="height:230px" hint-size="100%,230px"></x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 04 AI VISION ====== -->
+      <div id="sec-vision" data-screen-label="AI Vision" class="pf-sec" style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:44px 0">
+        <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:10px">{{ t.visK }}</div>
+        <h2 style="font:600 32px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 8px">{{ t.visT }}</h2>
+        <p style="font:400 14.5px/1.65 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 22px; max-width:660px">{{ t.visP }}</p>
+        <div style="display:flex; gap:8px; margin-bottom:16px">
+          <sc-for list="{{ visChips }}" as="vc" hint-placeholder-count="3">
+            <button onClick="{{ vc.go }}" style="padding:8px 15px; border:1px solid {{ vc.border }}; background:{{ vc.bg }}; color:{{ vc.color }}; border-radius:99px; font:500 12.5px 'Space Grotesk','Noto Sans JP',sans-serif; cursor:pointer">{{ vc.label }}</button>
+          </sc-for>
+        </div>
+        <div style="background:var(--panel); border:1px solid var(--line); border-radius:18px; overflow:hidden; margin-bottom:14px">
+          <x-import component-from-global-scope="vision-feed" from="./widgets.js" mode="{{ visionMode }}" style="height:390px" hint-size="100%,390px"></x-import>
+          <div class="pf-wrapstats" style="display:flex; gap:30px; padding:13px 20px; border-top:1px solid var(--line)">
+            <span style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted)">{{ t.statIns }} <span style="color:var(--ink)">{{ vsTotal }}</span></span>
+            <span style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted)">{{ t.statRej }} <span style="color:var(--bad)">{{ vsNg }}</span></span>
+            <span style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted)">{{ t.statYield }} <span style="color:var(--good)">{{ vsYield }}%</span></span>
+            <span style="font:500 11px 'IBM Plex Mono',monospace; color:var(--muted); margin-left:auto">REJECT SIGNAL → PLC OUTPUT Y12</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px">
+          <sc-for list="{{ visPills }}" as="vp" hint-placeholder-count="5">
+            <span style="font:500 10.5px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); border:1px solid var(--line); background:var(--panel); border-radius:99px; padding:6px 12px">{{ vp }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- ====== 05 POWER & SLD ====== -->
+      <div id="sec-power" data-screen-label="Power and SLD" class="pf-sec" style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:44px 0">
+        <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:10px">{{ t.pwrK }}</div>
+        <h2 style="font:600 32px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 8px">{{ t.pwrT }}</h2>
+        <p style="font:400 14.5px/1.65 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 22px; max-width:660px">{{ t.pwrP }}</p>
+        <div class="pf-grid2" style="display:grid; grid-template-columns:1.45fr 1fr; gap:14px; align-items:start">
+          <div style="background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px 22px">
+            <div style="font:600 13.5px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:4px">{{ t.sldT }}</div>
+            <div style="font:400 10px 'IBM Plex Mono',monospace; color:var(--muted); margin-bottom:8px">DWG-E-001 · REV C · FOR CONSTRUCTION</div>
+            <svg viewBox="0 0 780 300" style="width:100%; height:auto; display:block">
+              <circle cx="46" cy="70" r="18" fill="none" stroke="var(--muted)" stroke-width="1.5"></circle>
+              <text x="46" y="74" text-anchor="middle" style="font:600 11px 'IBM Plex Mono',monospace" fill="var(--muted)">G</text>
+              <text x="46" y="106" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">UTILITY 6.6kV</text>
+              <line x1="64" y1="70" x2="134" y2="70" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="64" y1="70" x2="134" y2="70" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:7 9; animation:dash 1.3s linear infinite"></line>
+              <circle cx="152" cy="70" r="16" fill="none" stroke="var(--muted)" stroke-width="1.5"></circle>
+              <circle cx="176" cy="70" r="16" fill="none" stroke="var(--muted)" stroke-width="1.5"></circle>
+              <text x="164" y="106" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">TR-1 · 500kVA · 6.6kV/400V</text>
+              <line x1="192" y1="70" x2="252" y2="70" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="192" y1="70" x2="252" y2="70" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:7 9; animation:dash 1.3s linear infinite"></line>
+              <rect x="252" y="56" width="28" height="28" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <line x1="256" y1="80" x2="276" y2="60" stroke="var(--muted)" stroke-width="1.5"></line>
+              <text x="266" y="106" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">MCCB 800A</text>
+              <line x1="280" y1="70" x2="330" y2="70" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="280" y1="70" x2="330" y2="70" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:7 9; animation:dash 1.3s linear infinite"></line>
+              <rect x="330" y="66" width="420" height="7" rx="2" fill="var(--muted)"></rect>
+              <text x="742" y="58" text-anchor="end" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">MAIN BUS · 400V 3Ø</text>
+              <line x1="400" y1="73" x2="400" y2="118" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="400" y1="73" x2="400" y2="118" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f1dur }} linear infinite"></line>
+              <rect x="391" y="118" width="18" height="20" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <line x1="394" y1="135" x2="406" y2="121" stroke="var(--muted)" stroke-width="1.4"></line>
+              <line x1="400" y1="138" x2="400" y2="182" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="400" y1="138" x2="400" y2="182" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f1dur }} linear infinite"></line>
+              <rect x="352" y="182" width="96" height="46" rx="8" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <text x="400" y="201" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">L1 · FORGE</text>
+              <text x="400" y="217" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">PRESS LINE</text>
+              <rect x="352" y="244" width="96" height="7" rx="3.5" fill="var(--line)"></rect>
+              <rect x="352" y="244" width="{{ p1w }}" height="7" rx="3.5" fill="{{ p1color }}"></rect>
+              <text x="400" y="270" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">{{ l1 }} A</text>
+              <text x="400" y="284" text-anchor="middle" style="font:400 8.5px 'IBM Plex Mono',monospace" fill="{{ p1color }}">{{ p1pct }}% OF 160A</text>
+              <line x1="540" y1="73" x2="540" y2="118" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="540" y1="73" x2="540" y2="118" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f2dur }} linear infinite"></line>
+              <rect x="531" y="118" width="18" height="20" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <line x1="534" y1="135" x2="546" y2="121" stroke="var(--muted)" stroke-width="1.4"></line>
+              <line x1="540" y1="138" x2="540" y2="182" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="540" y1="138" x2="540" y2="182" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f2dur }} linear infinite"></line>
+              <rect x="492" y="182" width="96" height="46" rx="8" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <text x="540" y="201" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">L2 · MACHINE</text>
+              <text x="540" y="217" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">CNC SHOP</text>
+              <rect x="492" y="244" width="96" height="7" rx="3.5" fill="var(--line)"></rect>
+              <rect x="492" y="244" width="{{ p2w }}" height="7" rx="3.5" fill="{{ p2color }}"></rect>
+              <text x="540" y="270" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">{{ l2 }} A</text>
+              <text x="540" y="284" text-anchor="middle" style="font:400 8.5px 'IBM Plex Mono',monospace" fill="{{ p2color }}">{{ p2pct }}% OF 160A</text>
+              <line x1="680" y1="73" x2="680" y2="118" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="680" y1="73" x2="680" y2="118" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f3dur }} linear infinite"></line>
+              <rect x="671" y="118" width="18" height="20" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <line x1="674" y1="135" x2="686" y2="121" stroke="var(--muted)" stroke-width="1.4"></line>
+              <line x1="680" y1="138" x2="680" y2="182" stroke="var(--line)" stroke-width="2"></line>
+              <line x1="680" y1="138" x2="680" y2="182" stroke="var(--accent)" stroke-width="2" style="stroke-dasharray:6 8; animation:dash {{ f3dur }} linear infinite"></line>
+              <rect x="632" y="182" width="96" height="46" rx="8" fill="none" stroke="var(--muted)" stroke-width="1.5"></rect>
+              <text x="680" y="201" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">L3 · SERVER</text>
+              <text x="680" y="217" text-anchor="middle" style="font:400 9px 'IBM Plex Mono',monospace" fill="var(--muted)">ROOM + HVAC</text>
+              <rect x="632" y="244" width="96" height="7" rx="3.5" fill="var(--line)"></rect>
+              <rect x="632" y="244" width="{{ p3w }}" height="7" rx="3.5" fill="{{ p3color }}"></rect>
+              <text x="680" y="270" text-anchor="middle" style="font:600 10px 'IBM Plex Mono',monospace" fill="var(--ink)">{{ l3 }} A</text>
+              <text x="680" y="284" text-anchor="middle" style="font:400 8.5px 'IBM Plex Mono',monospace" fill="{{ p3color }}">{{ p3pct }}% OF 160A</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px 22px">
+              <div style="font:600 13.5px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:14px">{{ t.balT }}</div>
+              <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px">
+                <sc-for list="{{ phaseRows }}" as="ph" hint-placeholder-count="3">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+                      <span style="font:600 10.5px 'IBM Plex Mono',monospace; color:var(--muted)">{{ ph.name }}</span>
+                      <span style="font:600 10.5px 'IBM Plex Mono',monospace; color:{{ ph.color }}">{{ ph.amps }} A</span>
+                    </div>
+                    <input type="range" min="0" max="160" value="{{ ph.val }}" onChange="{{ ph.set }}" style="width:100%; accent-color:var(--accent); height:20px; margin:0">
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px">
+                <div style="border:1px solid var(--line); border-radius:10px; padding:10px 12px">
+                  <div style="font:600 20px 'Space Grotesk',sans-serif; color:{{ imbColor }}">{{ imb }}%</div>
+                  <div style="font:400 9px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); margin-top:2px">{{ t.imbLbl }}</div>
+                </div>
+                <div style="border:1px solid var(--line); border-radius:10px; padding:10px 12px">
+                  <div style="font:600 20px 'Space Grotesk',sans-serif">{{ neutral }} A</div>
+                  <div style="font:400 9px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted); margin-top:2px">{{ t.neuLbl }}</div>
+                </div>
+              </div>
+              <button onClick="{{ balance }}" style="width:100%; padding:11px 0; background:var(--accent); color:var(--bg); border:none; border-radius:10px; font:600 12px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.08em; cursor:pointer">{{ balanceLabel }}</button>
+            </div>
+            <div style="background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 22px">
+              <div style="font:400 12.5px/1.75 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted)">{{ t.depedNote }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 06 EXPERIENCE ====== -->
+      <div id="sec-experience" data-screen-label="Experience" class="pf-sec" style="min-height:100vh; box-sizing:border-box; scroll-snap-align:start; padding:56px 0 48px">
+        <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:10px">{{ t.expK }}</div>
+        <h2 style="font:600 32px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 26px">{{ t.expT }}</h2>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:34px">
+          <sc-for list="{{ expItems }}" as="job" hint-placeholder-count="5">
+            <div class="pf-exp" style="display:grid; grid-template-columns:190px 1fr; gap:22px; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 26px">
+              <div>
+                <div style="font:500 10px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--accent); letter-spacing:.08em; margin-bottom:6px">{{ job.period }}</div>
+                <div style="font:400 10px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted)">{{ job.loc }}</div>
+              </div>
+              <div>
+                <div style="font:600 16px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:2px">{{ job.role }}</div>
+                <div style="font:400 12.5px 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin-bottom:12px">{{ job.co }}</div>
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <sc-for list="{{ job.points }}" as="pt" hint-placeholder-count="3">
+                    <div style="display:flex; gap:10px; align-items:baseline">
+                      <span style="flex:0 0 5px; width:5px; height:5px; border-radius:50%; background:var(--accent); transform:translateY(-2px)"></span>
+                      <span style="font:400 13px/1.6 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--ink)">{{ pt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font:600 15px 'Space Grotesk','Noto Sans JP',sans-serif; margin-bottom:14px">{{ t.toolboxT }}</div>
+        <div class="pf-skills" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px">
+          <sc-for list="{{ skillGroups }}" as="sg" hint-placeholder-count="6">
+            <div style="background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px">
+              <div style="font:500 10px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.12em; color:var(--accent); margin-bottom:10px">{{ sg.name }}</div>
+              <div style="font:400 12.5px/1.85 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted)">{{ sg.items }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- ====== 07 CONTACT ====== -->
+      <div id="sec-contact" data-screen-label="Contact" class="pf-sec" style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; scroll-snap-align:start; padding:44px 0">
+        <div style="max-width:640px">
+          <div style="font:500 11px 'IBM Plex Mono','Noto Sans JP',monospace; letter-spacing:.14em; color:var(--accent); margin-bottom:14px">{{ t.conK }}</div>
+          <h2 style="font:600 38px/1.15 'Space Grotesk','Noto Sans JP',sans-serif; margin:0 0 16px">{{ t.conT }}</h2>
+          <p style="font:400 15px/1.7 'Space Grotesk','Noto Sans JP',sans-serif; color:var(--muted); margin:0 0 28px">{{ t.conP }}</p>
+          <a href="mailto:dichoso.elainegrace.aveno@gmail.com" style="display:inline-flex; align-items:center; gap:12px; padding:16px 24px; background:var(--accent); color:var(--bg); border-radius:12px; font:600 15px 'Space Grotesk',sans-serif; text-decoration:none; margin-bottom:34px">dichoso.elainegrace.aveno@gmail.com</a>
+          <div style="display:flex; flex-direction:column; gap:9px">
+            <sc-for list="{{ credLines }}" as="cl" hint-placeholder-count="4">
+              <div style="font:400 12px 'IBM Plex Mono','Noto Sans JP',monospace; color:var(--muted)">{{ cl }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accentColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#0d94b4&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#0d94b4&quot;, &quot;#c67c2e&quot;, &quot;#3fae6a&quot;, &quot;#8d78e0&quot;], &quot;section&quot;: &quot;Theme&quot; },
+  &quot;autoRotate&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;3D scenes&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    theme: 'light', lang: 'en', sec: 'overview', labKind: 'plc', robotMode: 'auto',
+    j: [0, -26, 52, 0, 50, 0], vs: { total: 0, ng: 0 }, visionMode: 'detect',
+    loads: [122, 74, 98], balancing: false, estop: false,
+  };
+
+  componentDidMount() {
+    const saved = localStorage.getItem('ed-theme');
+    if (saved === 'dark' || saved === 'light') {
+      document.body.dataset.theme = saved;
+      this.setState({ theme: saved });
+    }
+    const h = (location.hash || '').toLowerCase();
+    if (h.includes('jp') || h.includes('ja')) this.setState({ lang: 'ja' });
+    else if (h.includes('en')) this.setState({ lang: 'en' });
+    else {
+      const sl = localStorage.getItem('ed-lang');
+      if (sl === 'ja' || sl === 'en') this.setState({ lang: sl });
+    }
+    this._onJ = (e) => {
+      if (e.target && e.target.id === 'labScene' && e.detail && e.detail.joints) this.setState({ j: e.detail.joints });
+    };
+    this._onV = (e) => { if (e.detail) this.setState({ vs: { total: e.detail.total, ng: e.detail.ng } }); };
+    document.addEventListener('labscene-joints', this._onJ);
+    document.addEventListener('vision-stats', this._onV);
+    const SECS = ['overview', 'lab', 'dashboard', 'vision', 'power', 'experience', 'contact'];
+    this._onScroll = () => {
+      if (this._scrollRaf) return;
+      this._scrollRaf = requestAnimationFrame(() => {
+        this._scrollRaf = null;
+        const y = window.scrollY + window.innerHeight * 0.45;
+        let cur = 'overview';
+        for (const id of SECS) {
+          const el = document.getElementById('sec-' + id);
+          if (el && el.offsetTop <= y) cur = id;
+        }
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = 'contact';
+        if (cur !== this.state.sec) this.setState({ sec: cur });
+      });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    this._onScroll();
+    this._applyAccent();
+  }
+  componentWillUnmount() {
+    document.removeEventListener('labscene-joints', this._onJ);
+    document.removeEventListener('vision-stats', this._onV);
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+    if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
+    clearInterval(this._jogI); clearInterval(this._balI); clearTimeout(this._esT);
+  }
+  componentDidUpdate() { this._applyAccent(); }
+  _applyAccent() {
+    const a = this.props.accentColor;
+    if (a && a !== '#0d94b4') document.body.style.setProperty('--accent', a);
+    else document.body.style.removeProperty('--accent');
+  }
+  _go(id) {
+    this.setState({ sec: id });
+    const el = document.getElementById('sec-' + id);
+    if (el) window.scrollTo({ top: Math.max(0, el.offsetTop - 8), behavior: 'smooth' });
+  }
+  _setLang(l) {
+    this.setState({ lang: l });
+    localStorage.setItem('ed-lang', l);
+    try { history.replaceState(null, '', l === 'ja' ? '#jpn' : '#eng'); } catch (e) {}
+  }
+  _robot() { const el = document.getElementById('labScene'); return el && el.robot; }
+  _jogStart(i, dir) {
+    if (this.state.robotMode !== 'manual') this.setState({ robotMode: 'manual' });
+    clearInterval(this._jogI);
+    const step = () => { const r = this._robot(); if (r) r.jog(i, dir * 2.4); };
+    step();
+    this._jogI = setInterval(step, 70);
+  }
+  _jogStop = () => { clearInterval(this._jogI); };
+  _balance() {
+    const L = this.state.loads;
+    const tgt = Math.round((L[0] + L[1] + L[2]) / 3);
+    clearInterval(this._balI);
+    this.setState({ balancing: true });
+    let n = 0;
+    this._balI = setInterval(() => {
+      n++;
+      if (n > 30) {
+        clearInterval(this._balI);
+        this.setState({ loads: [tgt, tgt, tgt], balancing: false });
+      } else {
+        this.setState({ loads: this.state.loads.map((v) => v + (tgt - v) * 0.16) });
+      }
+    }, 28);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const STR = {
+      en: {
+        navs: ['Overview', 'Automation Lab', 'IoT Dashboard', 'AI Vision', 'Power & SLD', 'Experience', 'Contact'],
+        role: 'ELECTRICAL & AUTOMATION ENGINEER · DATA CENTERS — JAPAN',
+        heroP: 'I build industrial automation end-to-end — panel wiring and PLC ladder, robots and edge AI vision, up to the IoT dashboards that run the plant. Now doing capacity installs and server engineering in the data centers of a global technology company; previously digital-transformation R&D at a forging manufacturer in Japan.',
+        heroChips: ['Registered EE (PH)', 'JLPT N3', 'TOEIC Advanced', 'BSEE · Mapúa (ABET)'],
+        ctaLab: 'Enter the lab →', ctaMail: 'Get in touch',
+        dragHint: 'DRAG TO ROTATE', dragHint2: 'DRAG · CLICK MARKERS',
+        labK: '02 — AUTOMATION LAB', labT: 'The machines I work with',
+        labP: 'Every model below maps to real project work. Drag to rotate, click the numbered markers — and on the robot, take the teach pendant.',
+        mach: ['PLC & VFD', 'Robot cell', 'Servers', 'CNC', 'Embedded & IoT', '3D printer'],
+        info: {
+          plc: { t: 'PLC & Drives', c: 'MITSUBISHI iQ-R · iQ-F · FR-D700 · GOT · KM-N2',
+            b: 'Mitsubishi iQ-R and iQ-F (FX5U) PLCs in GX Works, OMRON in CX-Programmer — live data over SLMP / MC Protocol, Modbus and Ethernet/IP. FR-D700 inverter for conveyor control, GOT HMI screens, and an OMRON KM-N2 energy monitor feeding CT data to the dashboards.',
+            tags: ['GX Works', 'CX-Programmer', 'SLMP / MC', 'Modbus', 'Ethernet/IP', 'FR-D700', 'GOT HMI', 'KM-N2'] },
+          robot: { t: 'Robot Automation Cell', c: 'AUTOMATION CELL · CONVEYOR + LINEAR AXIS',
+            b: 'A pick-and-place automation cell: 6-axis robot, VFD-driven conveyor, and an IAI RoboCylinder linear axis — integrated with a Mitsubishi PLC over ladder-based sockets, with PLC–CCTV monitoring. Take the pendant: jogging switches it to MANUAL.',
+            tags: ['IAI RoboCylinder', 'Ladder sockets', 'Conveyor + VFD', 'PLC–CCTV'] },
+          server: { t: 'Servers & Data Centers', c: 'DATA CENTER · IOT DATA SERVERS',
+            b: 'Capacity install technician / server engineer at a global technology company: rack & stack, server deployment, and turning manual inventory and allocation into automatic systems. Previously maintained DENSO IoT datashare servers in a secured server room — PostgreSQL, Oracle and MariaDB linking plant data to dashboards.',
+            tags: ['Capacity install', 'PostgreSQL', 'Oracle', 'MariaDB', 'Auto-inventory', 'Auto-allocation'] },
+          cnc: { t: 'CNC & CAD/CAM', c: 'FANUC-BASED CNC · MACHINE SHOP',
+            b: 'FANUC-based CNC machines on the shop floor — a design-to-machine workflow across NX Siemens, SolidWorks, Fusion 360 and AutoCAD, commissioned through FAT and SAT to client approval.',
+            tags: ['FANUC-based CNC', 'NX Siemens', 'SolidWorks', 'Fusion 360', 'AutoCAD', 'FAT / SAT'] },
+          bench: { t: 'Embedded & IoT Bench', c: 'EDGE DEVICES',
+            b: 'Raspberry Pi, Jetson Nano, Arduino and ESP32 nodes running Python — camera-based AI inspection, a custom misalignment checker, and IoT dashboards fed by CT sensors and PLC data.',
+            tags: ['Raspberry Pi', 'Jetson Nano', 'ESP32', 'Arduino', 'Python', 'C++'] },
+          printer: { t: '3D Printing', c: 'RAPID PROTOTYPING',
+            b: 'Jigs, camera mounts and sensor housings modeled in Fusion 360 and SolidWorks, printed and iterated straight onto the production floor.',
+            tags: ['Fusion 360', 'SolidWorks', 'Prototyping'] },
+        },
+        dashK: '03 — IOT DASHBOARD', dashT: 'Energy & OEE monitoring, live',
+        dashP: 'A working replica of the real-time monitoring I build: current-transformer data from the PLC network, stored in PostgreSQL and Oracle, visualized in Power BI & Grafana. This one found ¥4,200/month of standby power hiding in idle machines.',
+        standbyLbl: 'STANDBY POWER FOUND PER MONTH · NOW RECOVERED',
+        machinesLbl: 'MACHINES REPORTING SLMP · MC PROTOCOL',
+        pipeLbl: 'DATA PIPELINE',
+        chart1: 'Plant power draw', chart2: 'Availability by machine',
+        visK: '04 — AI VISION', visT: 'Inspecting forged parts with edge AI',
+        visP: 'Cameras on Raspberry Pi and Jetson Nano inspect parts in-line — object detection, segmentation and anomaly detection — with results handed back to the PLC for reject handling. Switch the model:',
+        vmodes: ['Detection', 'Segmentation', 'Anomaly'],
+        statIns: 'INSPECTED', statRej: 'REJECTED', statYield: 'YIELD',
+        visPills: ['Object detection', 'Segmentation', 'Anomaly detection', 'Custom misalignment checker', 'PLC–CCTV robot monitoring'],
+        pwrK: '05 — POWER & SLD', pwrT: 'Single-line diagram & load balancing',
+        pwrP: 'The registered-EE side: electrical layouts designed and inspected to code for government infrastructure, FAT/SAT tested. Drag the phase loads below and watch the neutral current — then let it auto-balance.',
+        sldT: 'Plant single-line diagram', balT: 'Phase load balancing',
+        phases: ['L1 · FORGE', 'L2 · MACHINE', 'L3 · SERVER'],
+        imbLbl: 'IMBALANCE', neuLbl: 'NEUTRAL CURRENT',
+        balBtn: 'AUTO-BALANCE PHASES', balBusy: 'BALANCING…',
+        depedNote: 'Designed & inspected electrical layouts for the Department of Education (PH) — code compliance, safety standards, FAT & SAT participation.',
+        expK: '06 — EXPERIENCE', expT: "Where I've built things", toolboxT: 'Toolbox',
+        jobs: [
+          { period: 'APR 2026 — PRESENT', loc: 'WORLDWIDE', role: 'Capacity Install Technician · Data Center Technician · Server Engineer', co: 'Global technology company — data centers',
+            points: [
+              'Capacity installs — rack & stack, cabling and server deployment at data-center scale.',
+              'Automated manual inventory into automatic inventory systems.',
+              'Automated manual allocation into automatic allocation.',
+            ] },
+          { period: 'APR 2025 — APR 2026', loc: 'JAPAN', role: 'R&D — Digital Transformation', co: 'Asahi Forge Corporation',
+            points: [
+              'PLC data gathering over SLMP and MC Protocol for plant-wide system integration.',
+              'Built a real-time energy dashboard (Power BI + CT data) for OEE availability — found ¥4,200/month of standby power in idle machines and cut it.',
+              'Maintained DENSO IoT data servers in a secured server room; disk and memory checks, network fixes with cross-functional teams.',
+            ] },
+          { period: 'DEC 2023 — APR 2025', loc: 'JAPAN', role: 'R&D Engineer', co: 'Asahi Forge Corporation',
+            points: [
+              'IAI RoboCylinder + Mitsubishi PLC socket integration for an eddy-current inspection system.',
+              'VFD inverter comms for conveyor speed and direction control.',
+              'PLC-integrated IoT systems for real-time production monitoring; PLC–CCTV integration for robot monitoring.',
+              'AI-based material inspection with cameras on Raspberry Pi and Jetson Nano; custom embedded misalignment checker.',
+              'Maintained PostgreSQL and Oracle servers linking automation data to enterprise dashboards.',
+            ] },
+          { period: 'DEC 2022 — DEC 2023', loc: 'JAPAN', role: 'IT Department Developer', co: 'Asahi Forge Corporation',
+            points: [
+              'AI-based defect detection combining PLC data with embedded AI modules.',
+              'Electrical setup, device commissioning and preventive maintenance.',
+            ] },
+          { period: '2019 — 2021', loc: 'PHILIPPINES', role: 'Electrical Engineer — Facilities Development', co: 'Department of Education',
+            points: [
+              'Designed and inspected electrical layouts for government infrastructure projects.',
+              'Code compliance and safety standards; FAT and SAT participation.',
+            ] },
+        ],
+        skills: [
+          { name: 'CONTROL & AUTOMATION', items: 'PLC (GX Works, CX-Programmer) · HMI/SCADA · Modbus · Ethernet/IP · VFD · FluidSim · Instrumentation · FAT' },
+          { name: 'IOT & EMBEDDED', items: 'Raspberry Pi · Jetson Nano · Arduino · ESP32 · Python dashboards · PostgreSQL · Oracle · MariaDB' },
+          { name: 'DATA CENTERS & SYSTEMS', items: 'Capacity installs · Rack & stack · IP config · LAN/WAN · Linux & Windows servers · Grafana · Power BI' },
+          { name: 'DESIGN TOOLS', items: 'AutoCAD · SolidWorks · NX Siemens · Fusion 360' },
+          { name: 'PROGRAMMING', items: 'Python · C++ · C# · Visual Basic · MATLAB · HTML · AI (detection, segmentation, anomaly)' },
+          { name: 'LANGUAGES', items: 'English (TOEIC Advanced) · Japanese (JLPT N3) · Filipino' },
+        ],
+        conK: '07 — CONTACT', conT: "Let's automate something.",
+        conP: 'Working across automation, embedded AI, plant data and data centers. Open to conversations in English or Japanese.',
+        creds: [
+          'REGISTERED ELECTRICAL ENGINEER — PHILIPPINES',
+          'BS ELECTRICAL ENGINEERING · MAPÚA UNIVERSITY · ABET',
+          'ELECTRICAL INSTALLATION & MAINTENANCE CERTIFICATE',
+          'JLPT N3 · TOEIC ADVANCED WORKING PROFICIENCY',
+        ],
+      },
+      ja: {
+        navs: ['概要', 'オートメーションラボ', 'IoTダッシュボード', 'AIビジョン', '電力・単線図', '経歴', '連絡先'],
+        role: '電気・自動化エンジニア × データセンター — 日本',
+        heroP: '制御盤の配線やPLCラダーから、ロボット・エッジAIビジョン、工場を動かすIoTダッシュボードまで、産業オートメーションを一気通貫で構築します。現在はグローバルテック企業のデータセンターでキャパシティ増設・サーバーエンジニアリングを担当。前職では日本の鍛造メーカーでDX研究開発に従事。',
+        heroChips: ['電気技術者免許（フィリピン）', 'JLPT N3', 'TOEIC 上級', 'マプア大学 EE（ABET認定）'],
+        ctaLab: 'ラボを見る →', ctaMail: '連絡する',
+        dragHint: 'ドラッグで回転', dragHint2: 'ドラッグ・マーカーをクリック',
+        labK: '02 — オートメーションラボ', labT: '実際に扱ってきた設備',
+        labP: '以下のモデルはすべて実務に基づいています。ドラッグで回転、番号マーカーをクリック。ロボットではティーチペンダントも操作できます。',
+        mach: ['PLC・インバータ', 'ロボットセル', 'サーバー', 'CNC', '組込み・IoT', '3Dプリンタ'],
+        info: {
+          plc: { t: 'PLC・ドライブ', c: 'MITSUBISHI iQ-R · iQ-F · FR-D700 · GOT · KM-N2',
+            b: '三菱 iQ-R / iQ-F（FX5U）をGX Works、オムロンをCX-Programmerでプログラミング。SLMP / MCプロトコル、Modbus、Ethernet/IPでリアルタイムデータ収集。FR-D700インバータによるコンベア制御、GOT表示器、オムロンKM-N2電力モニタでCTデータをダッシュボードへ。',
+            tags: ['GX Works', 'CX-Programmer', 'SLMP / MC', 'Modbus', 'Ethernet/IP', 'FR-D700', 'GOT HMI', 'KM-N2'] },
+          robot: { t: 'ロボット自動化セル', c: 'AUTOMATION CELL · CONVEYOR + LINEAR AXIS',
+            b: '6軸ロボット、インバータ駆動コンベア、IAIロボシリンダーの直動軸を三菱PLCとソケット通信（ラダー）で統合したピック＆プレース自動化セル。PLC–CCTV連携による監視付き。ジョグ操作するとMANUALに切り替わります。',
+            tags: ['IAI RoboCylinder', 'ソケット通信', 'コンベア + VFD', 'PLC–CCTV'] },
+          server: { t: 'サーバー・データセンター', c: 'DATA CENTER · IOT DATA SERVERS',
+            b: 'グローバルテック企業のデータセンターでキャパシティ増設・サーバーエンジニアとして勤務：ラッキング、サーバー展開、手作業だった在庫管理・割当ての自動化。前職ではDENSO IoTデータ共有サーバーをセキュアなサーバールームで保守し、PostgreSQL・Oracle・MariaDBで工場データを連携。',
+            tags: ['Capacity install', 'PostgreSQL', 'Oracle', 'MariaDB', '在庫自動化', '割当自動化'] },
+          cnc: { t: 'CNC・CAD/CAM', c: 'FANUC-BASED CNC · MACHINE SHOP',
+            b: '現場のFANUC系CNCとの連携 — NX Siemens、SolidWorks、Fusion 360、AutoCADによる設計から加工までのワークフロー。FAT・SATを経て客先承認まで。',
+            tags: ['FANUC系CNC', 'NX Siemens', 'SolidWorks', 'Fusion 360', 'AutoCAD', 'FAT / SAT'] },
+          bench: { t: '組込み・IoTベンチ', c: 'EDGE DEVICES',
+            b: 'Raspberry Pi、Jetson Nano、Arduino、ESP32によるPython開発 — カメラを使ったAI検査、独自のミスアライメント検知、CTセンサーとPLCデータによるIoTダッシュボード。',
+            tags: ['Raspberry Pi', 'Jetson Nano', 'ESP32', 'Arduino', 'Python', 'C++'] },
+          printer: { t: '3Dプリント', c: 'RAPID PROTOTYPING',
+            b: 'Fusion 360とSolidWorksで治具・カメラマウント・センサー筐体を設計し、3Dプリントで即座に現場へ投入。',
+            tags: ['Fusion 360', 'SolidWorks', 'プロトタイピング'] },
+        },
+        dashK: '03 — IOTダッシュボード', dashT: 'エネルギー & OEE モニタリング',
+        dashP: '実際に構築しているリアルタイム監視の再現：PLCネットワークからCT（変流器）データを収集し、PostgreSQL・Oracleに蓄積、Power BI・Grafanaで可視化。待機電力 月額¥4,200 を発見・削減した仕組みです。',
+        standbyLbl: '発見した待機電力（月額）・現在は削減済み',
+        machinesLbl: '稼働設備 SLMP・MC プロトコル',
+        pipeLbl: 'データパイプライン',
+        chart1: '工場電力デマンド', chart2: '設備別 稼働率',
+        visK: '04 — AIビジョン', visT: '鍛造部品のエッジAI検査',
+        visP: 'Raspberry PiとJetson Nano上のカメラでラインを流れる部品を検査 — 物体検出・セグメンテーション・異常検知。判定結果はPLCへ返され、不良品を排出します。モデルを切り替え：',
+        vmodes: ['検出', 'セグメンテーション', '異常検知'],
+        statIns: '検査数', statRej: '不良数', statYield: '歩留まり',
+        visPills: ['物体検出', 'セグメンテーション', '異常検知', '独自ミスアライメント検知', 'PLC–CCTVロボット監視'],
+        pwrK: '05 — 電力・単線結線図', pwrT: '単線結線図と負荷バランス',
+        pwrP: '電気技術者としての側面：政府インフラ向け電気設計・検査（法規準拠、FAT/SAT実施）。下のスライダーで相負荷を動かし、中性線電流の変化を確認 — 自動バランスも試せます。',
+        sldT: '工場単線結線図', balT: '相負荷バランス',
+        phases: ['L1 · FORGE', 'L2 · MACHINE', 'L3 · SERVER'],
+        imbLbl: '不平衡率', neuLbl: '中性線電流',
+        balBtn: '自動バランス実行', balBusy: 'バランス調整中…',
+        depedNote: 'フィリピン教育省にて政府インフラの電気設計・検査を担当 — 法規準拠・安全基準、FAT/SATに参画。',
+        expK: '06 — 経歴', expT: 'これまでの仕事', toolboxT: 'ツールボックス',
+        jobs: [
+          { period: '2026年4月 — 現在', loc: '世界各地', role: 'キャパシティインストール技術者 · データセンター技術者 · サーバーエンジニア', co: 'グローバルテック企業 — データセンター',
+            points: [
+              'ラック搭載・配線・サーバー展開など、データセンター規模のキャパシティ増設作業。',
+              '手作業の在庫管理を自動在庫管理システムへ移行。',
+              '手動の割当て業務を自動割当てへ移行。',
+            ] },
+          { period: '2025年4月 — 2026年4月', loc: '日本', role: 'R&D — デジタルトランスフォーメーション', co: 'Asahi Forge Corporation',
+            points: [
+              'SLMP・MCプロトコルによるPLCデータ収集と全社的なシステム統合。',
+              'Power BIとCTデータでリアルタイム電力ダッシュボードを構築 — 待機電力 月額¥4,200 を発見し削減。',
+              'セキュアなサーバールームでDENSO IoTデータサーバーを保守。ディスク・メモリ点検、部門横断のネットワーク対応。',
+            ] },
+          { period: '2023年12月 — 2025年4月', loc: '日本', role: 'R&D エンジニア', co: 'Asahi Forge Corporation',
+            points: [
+              'IAIロボシリンダーと三菱PLCのソケット統合による渦電流検査システム。',
+              'インバータ通信によるコンベアの速度・方向制御。',
+              'リアルタイム生産監視のためのPLC連携IoTシステム。ロボット監視のPLC–CCTV統合。',
+              'Raspberry Pi・Jetson Nano上のカメラによるAI材料検査。独自のミスアライメント検知。',
+              'PostgreSQL・Oracleサーバーを保守し、自動化データを企業ダッシュボードへ連携。',
+            ] },
+          { period: '2022年12月 — 2023年12月', loc: '日本', role: 'IT部門 開発者', co: 'Asahi Forge Corporation',
+            points: [
+              'PLCデータと組込みAIモジュールによるAI不良検出システムを開発。',
+              '電気工事、機器コミッショニング、予防保全。',
+            ] },
+          { period: '2019 — 2021', loc: 'フィリピン', role: '電気エンジニア — 施設開発', co: 'フィリピン教育省',
+            points: [
+              '政府インフラの電気設計・検査。',
+              '電気法規・安全基準への準拠。FAT・SATに参画。',
+            ] },
+        ],
+        skills: [
+          { name: '制御・自動化', items: 'PLC (GX Works, CX-Programmer) · HMI/SCADA · Modbus · Ethernet/IP · VFD · FluidSim · 計装 · FAT' },
+          { name: 'IoT・組込み', items: 'Raspberry Pi · Jetson Nano · Arduino · ESP32 · Python ダッシュボード · PostgreSQL · Oracle · MariaDB' },
+          { name: 'データセンター・システム', items: 'キャパシティ増設 · ラッキング · IP設定 · LAN/WAN · Linux / Windows サーバー · Grafana · Power BI' },
+          { name: '設計ツール', items: 'AutoCAD · SolidWorks · NX Siemens · Fusion 360' },
+          { name: 'プログラミング', items: 'Python · C++ · C# · Visual Basic · MATLAB · HTML · AI（検出・セグメンテーション・異常検知）' },
+          { name: '言語', items: '英語（TOEIC 上級）· 日本語（JLPT N3）· フィリピン語' },
+        ],
+        conK: '07 — 連絡先', conT: '一緒に自動化しましょう。',
+        conP: 'オートメーション、組込みAI、プラントデータ、データセンターの領域で活動しています。英語・日本語どちらでもお気軽にどうぞ。',
+        creds: [
+          '電気技術者免許（フィリピン）',
+          'マプア大学 電気工学専攻（ABET認定）',
+          '電気設備工事・保守 修了証',
+          'JLPT N3 · TOEIC 上級',
+        ],
+      },
+    };
+    const L = STR[s.lang] || STR.en;
+
+    const SEC_IDS = ['overview', 'lab', 'dashboard', 'vision', 'power', 'experience', 'contact'];
+    const navItems = SEC_IDS.map((id, i) => ({
+      num: '0' + (i + 1), label: L.navs[i],
+      color: s.sec === id ? 'var(--ink)' : 'var(--muted)',
+      bg: s.sec === id ? 'color-mix(in oklab, var(--accent) 13%, transparent)' : 'transparent',
+      go: () => this._go(id),
+    }));
+
+    const MACH_IDS = ['plc', 'robot', 'server', 'cnc', 'bench', 'printer'];
+    const machineChips = MACH_IDS.map((id, i) => ({
+      label: L.mach[i],
+      border: s.labKind === id ? 'var(--accent)' : 'var(--line)',
+      bg: s.labKind === id ? 'color-mix(in oklab, var(--accent) 14%, transparent)' : 'var(--panel)',
+      color: s.labKind === id ? 'var(--accent)' : 'var(--muted)',
+      go: () => this.setState({ labKind: id, robotMode: 'auto' }),
+    }));
+    const info = L.info[s.labKind];
+
+    const LIM = [[-165, 165], [-60, 80], [-70, 120], [-180, 180], [-110, 110], [-200, 200]];
+    const pendRows = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6'].map((name, i) => ({
+      name,
+      val: (s.j[i] || 0).toFixed(0) + '°',
+      pos: (((s.j[i] || 0) - LIM[i][0]) / (LIM[i][1] - LIM[i][0]) * 100).toFixed(1) + '%',
+      dn: () => this._jogStart(i, -1),
+      up: () => this._jogStart(i, 1),
+    }));
+
+    const VMODE_IDS = ['detect', 'segment', 'anomaly'];
+    const visChips = VMODE_IDS.map((id, i) => ({
+      label: L.vmodes[i],
+      border: s.visionMode === id ? 'var(--accent)' : 'var(--line)',
+      bg: s.visionMode === id ? 'color-mix(in oklab, var(--accent) 14%, transparent)' : 'var(--panel)',
+      color: s.visionMode === id ? 'var(--accent)' : 'var(--muted)',
+      go: () => this.setState({ visionMode: id }),
+    }));
+    const vsYield = s.vs.total ? (100 * (1 - s.vs.ng / s.vs.total)).toFixed(1) : '100.0';
+
+    const [a, b, c] = s.loads;
+    const rounded = s.loads.map((v) => Math.round(v));
+    const avg = (a + b + c) / 3 || 1;
+    const dev = Math.max(Math.abs(a - avg), Math.abs(b - avg), Math.abs(c - avg));
+    const imb = ((dev / avg) * 100).toFixed(1);
+    const neutral = Math.sqrt(Math.max(0, a * a + b * b + c * c - a * b - b * c - c * a)).toFixed(0);
+    const pcol = (v) => { const p = v / 160; return p > 0.92 ? 'var(--bad)' : p > 0.75 ? 'var(--warn)' : 'var(--good)'; };
+    const dur = (v) => Math.max(0.35, 1.9 - (v / 160) * 1.55).toFixed(2) + 's';
+    const phaseRows = L.phases.map((name, i) => ({
+      name,
+      amps: rounded[i],
+      val: rounded[i],
+      color: pcol(s.loads[i]),
+      set: (ev) => {
+        const Ld = this.state.loads.slice(); Ld[i] = +ev.target.value;
+        this.setState({ loads: Ld });
+      },
+    }));
+
+    return {
+      t: L,
+      navItems,
+      heroChips: L.heroChips,
+      goLab: () => this._go('lab'),
+      setEn: () => this._setLang('en'),
+      setJa: () => this._setLang('ja'),
+      langEnBg: s.lang === 'en' ? 'var(--accent)' : 'var(--panel)',
+      langEnColor: s.lang === 'en' ? 'var(--bg)' : 'var(--muted)',
+      langEnBorder: s.lang === 'en' ? 'var(--accent)' : 'var(--line)',
+      langJaBg: s.lang === 'ja' ? 'var(--accent)' : 'var(--panel)',
+      langJaColor: s.lang === 'ja' ? 'var(--bg)' : 'var(--muted)',
+      langJaBorder: s.lang === 'ja' ? 'var(--accent)' : 'var(--line)',
+      toggleTheme: () => {
+        const th = s.theme === 'dark' ? 'light' : 'dark';
+        document.body.dataset.theme = th;
+        localStorage.setItem('ed-theme', th);
+        this.setState({ theme: th });
+      },
+      themeLabel: s.theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE',
+      autoAttr: (this.props.autoRotate ?? true) ? '1' : '0',
+      machineChips,
+      labKind: s.labKind,
+      labTitle: info.t, labBody: info.b, labTags: info.tags, labCaption: info.c,
+      pendantDisp: s.labKind === 'robot' ? 'block' : 'none',
+      robotMode: s.robotMode,
+      setAuto: () => this.setState({ robotMode: 'auto' }),
+      setManual: () => this.setState({ robotMode: 'manual' }),
+      modeAutoBg: s.robotMode === 'auto' ? 'var(--accent)' : 'transparent',
+      modeAutoColor: s.robotMode === 'auto' ? '#10151c' : '#9fb0c1',
+      modeManBg: s.robotMode === 'manual' ? 'var(--accent)' : 'transparent',
+      modeManColor: s.robotMode === 'manual' ? '#10151c' : '#9fb0c1',
+      pendRows, jogStop: this._jogStop,
+      goHome: () => { const r = this._robot(); if (r) { this.setState({ robotMode: 'manual' }); r.home(); } },
+      estop: () => {
+        this.setState({ robotMode: 'manual', estop: true });
+        clearTimeout(this._esT);
+        this._esT = setTimeout(() => this.setState({ estop: false }), 900);
+      },
+      estopRing: s.estop ? 'rgba(212,56,40,.45)' : 'transparent',
+      visionMode: s.visionMode, visChips, visPills: L.visPills,
+      vsTotal: s.vs.total, vsNg: s.vs.ng, vsYield,
+      l1: rounded[0], l2: rounded[1], l3: rounded[2],
+      p1w: (a / 160) * 96, p2w: (b / 160) * 96, p3w: (c / 160) * 96,
+      p1pct: Math.round((a / 160) * 100), p2pct: Math.round((b / 160) * 100), p3pct: Math.round((c / 160) * 100),
+      p1color: pcol(a), p2color: pcol(b), p3color: pcol(c),
+      f1dur: dur(a), f2dur: dur(b), f3dur: dur(c),
+      phaseRows,
+      imb, neutral,
+      imbColor: +imb < 8 ? 'var(--good)' : +imb < 25 ? 'var(--warn)' : 'var(--bad)',
+      balance: () => this._balance(),
+      balanceLabel: s.balancing ? L.balBusy : L.balBtn,
+      expItems: L.jobs, skillGroups: L.skills, credLines: L.creds,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
